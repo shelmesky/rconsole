@@ -133,6 +133,7 @@ func (this *Client) HandShake(protocol, width, height, dpi string, audio []strin
 	for index := range PROTOCOLS {
 		if protocol == PROTOCOLS[index] {
 			found_protocol = true
+			break
 		}
 	}
 	if !found_protocol {
