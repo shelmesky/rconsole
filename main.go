@@ -11,7 +11,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	beego.SetStaticPath("/static", "./static")
-	beego.Router("/", &controllers.MainController{})
-	beego.Router("/ws/", &wscontrollers.WebSocketController{})
+	beego.Router("/connect", &controllers.MainController{})
+	beego.Router("/ws", &wscontrollers.WebSocketController{})
 	beego.Run()
 }

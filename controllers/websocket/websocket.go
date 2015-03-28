@@ -24,6 +24,10 @@ var (
 )
 
 func (this *WebSocketController) Get() {
+	var url_args map[string]string
+	var err error
+	var found_protocol bool
+
 	ws, err := upgrader.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil)
 	if err != nil {
 		utils.Println("websocket upgrade failed:", err)
@@ -35,17 +39,54 @@ func (this *WebSocketController) Get() {
 		ws.Close()
 	}()
 
-	connect_args := map[string]string{
-		"username": "roy",
-		"password": "password",
-		"hostname": "172.31.31.110",
-		"port":     "22",
+	Type := this.GetString("type")
+	for index := range rclient.PROTOCOLS {
+		if Type == rclient.PROTOCOLS[index] {
+			found_protocol = true
+			break
+		}
 	}
 
+	if !found_protocol {
+	}
+
+	if Type == "vnc" {
+		url_args, err = GetVNCArgs(this.Ctx)
+	}
+
+	if Type == "rdp" {
+		url_args, err = GetRDPArgs(this.Ctx)
+	}
+
+	if Type == "ssh" {
+		url_args, err = GetSSHArgs(this.Ctx)
+	}
+
+	if Type == "telnet" {
+		url_args, err = GetTELNETArgs(this.Ctx)
+	}
+
+	if err != nil {
+		utils.Println("get url args failed:", err)
+		return
+	}
+
+	if url_args == nil {
+		utils.Printf("empty url_args for protcol: %s\n", Type)
+		return
+	}
+
+	protocol_type := url_args["type"]
+	width := url_args["width"]
+	height := url_args["height"]
+	dpi := url_args["dpi"]
+
 	client := rclient.NewClient("172.31.31.110", "4822", 3*time.Second, false)
-	ret := client.HandShake("ssh", "1024", "650", "96", []string{}, []string{}, connect_args)
+
+	ret := client.HandShake(protocol_type, width, height, dpi, []string{}, []string{}, url_args)
 	if !ret {
 		utils.Println("handshake failed!")
+		return
 	}
 
 	go func() {
@@ -67,6 +108,7 @@ func (this *WebSocketController) Get() {
 		}
 		if message_type != websocket.TextMessage {
 			utils.Println("invalid message type:", message_type)
+			return
 		}
 
 		client.Send(message)

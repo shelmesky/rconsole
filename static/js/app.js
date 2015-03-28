@@ -3,7 +3,7 @@ var display = document.getElementById("display");
 
 // Instantiate client, using an HTTP tunnel for communications.
 var guac = new Guacamole.Client(
-    new Guacamole.WebSocketTunnel("/ws/")
+    new Guacamole.WebSocketTunnel("/ws?type=ssh&hostname=172.31.31.110&port=22&username=roy&width=1024&height=660&dpi=96")
 );
 
 // Add client to display div
