@@ -12,4 +12,4 @@
 
 ### 协议参数
 
-[协议参数](https://github.com/shelmesky/rconsole/PROTOCOLS.md "协议参数")
+[协议参数](https://github.com/shelmesky/rconsole/blob/master/PROTOCOLS.md "协议参数")
