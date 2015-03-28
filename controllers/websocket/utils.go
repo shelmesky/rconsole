@@ -105,6 +105,10 @@ func GetSSHArgs(context *context.Context) (map[string]string, error) {
 		goto get_args_failed
 	}
 
+	if ssh_args["dpi"] == "" {
+		ssh_args["dpi"] = "96"
+	}
+
 	return ssh_args, nil
 
 get_args_failed:
@@ -139,6 +143,10 @@ func GetTELNETArgs(context *context.Context) (map[string]string, error) {
 
 	if telnet_args["height"] == "" {
 		goto get_args_failed
+	}
+
+	if telnet_args["dpi"] == "" {
+		telnet_args["dpi"] = "96"
 	}
 
 	return telnet_args, nil

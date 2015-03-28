@@ -28,9 +28,9 @@ http://127.0.0.1:9999/connect?type=rdp&hostname=172.31.31.123&port=3389&username
 
 #### SSH:
 
-http://127.0.0.1:9999/connect?type=ssh&hostname=172.31.31.110&port=22&username=roy&width=1024&height=660&dpi=96
+http://127.0.0.1:9999/connect?type=ssh&hostname=172.31.31.110&port=22&username=roy&width=1024&height=660
 
 #### TELNET:
 
-http://127.0.0.1:9999/connect?type=telnet&hostname=172.31.31.110&port=23&username=roy&width=1024&height=660&dpi=96
+http://127.0.0.1:9999/connect?type=telnet&hostname=172.31.31.110&port=23&username=roy&width=1024&height=660
 
