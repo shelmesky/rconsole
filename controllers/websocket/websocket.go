@@ -48,6 +48,8 @@ func (this *WebSocketController) Get() {
 	}
 
 	if !found_protocol {
+		utils.Printf("invalid protocol: %s\n", Type)
+		return
 	}
 
 	if Type == "vnc" {
