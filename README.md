@@ -13,3 +13,24 @@
 ### 协议参数
 
 [协议参数](https://github.com/shelmesky/rconsole/blob/master/PROTOCOLS.md "协议参数")
+
+
+### 通过URL中指定参数连接
+
+#### VNC:
+
+http://127.0.0.1:9999/connect?type=vnc&hostname=172.31.31.101&port=5900&password=123456&width=1024&height=660&dpi=96
+
+#### RDP:
+
+http://127.0.0.1:9999/connect?type=rdp&hostname=172.31.31.123&port=3389&username=roy&width=1024&height=660&dpi=96
+
+
+#### SSH:
+
+http://127.0.0.1:9999/connect?type=ssh&hostname=172.31.31.110&port=22&username=roy&width=1024&height=660&dpi=96
+
+#### TELNET:
+
+http://127.0.0.1:9999/connect?type=telnet&hostname=172.31.31.110&port=23&username=roy&width=1024&height=660&dpi=96
+
