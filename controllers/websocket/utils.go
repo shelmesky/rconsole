@@ -9,7 +9,7 @@ func GetVNCArgs(context *context.Context) (map[string]string, error) {
 	vnc_args := make(map[string]string, 0)
 
 	Type := context.Input.Query("type")
-	if Type == "" && Type != "vnc" {
+	if Type == "" || Type != "vnc" {
 		return vnc_args, fmt.Errorf("got wrong protocol: %s\n", Type)
 	}
 
@@ -45,7 +45,7 @@ func GetRDPArgs(context *context.Context) (map[string]string, error) {
 	rdp_args := make(map[string]string, 0)
 
 	Type := context.Input.Query("type")
-	if Type == "" && Type != "rdp" {
+	if Type == "" || Type != "rdp" {
 		return rdp_args, fmt.Errorf("got wrong protocol: %s\n", Type)
 	}
 
@@ -80,7 +80,7 @@ func GetSSHArgs(context *context.Context) (map[string]string, error) {
 	ssh_args := make(map[string]string, 0)
 
 	Type := context.Input.Query("type")
-	if Type == "" && Type != "ssh" {
+	if Type == "" || Type != "ssh" {
 		return ssh_args, fmt.Errorf("got wrong protocol: %s\n", Type)
 	}
 
@@ -120,7 +120,7 @@ func GetTELNETArgs(context *context.Context) (map[string]string, error) {
 	telnet_args := make(map[string]string, 0)
 
 	Type := context.Input.Query("type")
-	if Type == "" && Type != "telnet" {
+	if Type == "" || Type != "telnet" {
 		return telnet_args, fmt.Errorf("got wrong protocol: %s\n", Type)
 	}
 

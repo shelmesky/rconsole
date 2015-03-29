@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/shelmesky/rconsole/controllers/primary"
 	"github.com/shelmesky/rconsole/controllers/websocket"
+	"github.com/shelmesky/rconsole/controllers/spice"
 	"runtime"
 )
 
@@ -13,5 +14,6 @@ func main() {
 	beego.SetStaticPath("/static", "./static")
 	beego.Router("/connect", &controllers.MainController{})
 	beego.Router("/ws", &wscontrollers.WebSocketController{})
+	beego.Router("/ws/spice", &spicecontrollers.SpiceController{})
 	beego.Run()
 }
