@@ -1,11 +1,13 @@
 package spicecontrollers
 
 import (
+	"bufio"
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 	"github.com/shelmesky/rconsole/utils"
-    "net"
+	"net"
 	"net/http"
+	"time"
 )
 
 type SpiceController struct {
@@ -21,7 +23,7 @@ var (
 )
 
 func (this *SpiceController) Get() {
-    ws, err := upgrader.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil)
+	ws, err := upgrader.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil)
 	if err != nil {
 		utils.Println("websocket upgrade failed:", err)
 		return
@@ -34,23 +36,62 @@ func (this *SpiceController) Get() {
 
 	Type := this.GetString("type")
 
-    if Type != "spice" {
+	if Type != "spice" {
 		utils.Printf("invalid protocol: %s\n", Type)
 		return
-    }
+	}
 
-    spice_args, err := GetSpiceArgs(this.Ctx)
-    if err != nil {
-        utils.Prinln("get args for SPICE failed:", err)
-        return
-    }
+	spice_args, err := GetSpiceArgs(this.Ctx)
+	if err != nil {
+		utils.Println("get args for SPICE failed:", err)
+		return
+	}
 
-    if spice_args == nil {
-        utils.Prinln("empty args for SPICE")
-        return
-    }
+	if spice_args == nil {
+		utils.Println("empty args for SPICE")
+		return
+	}
 
-    hostname := spice_args["hostname"]
-    port := spice_args["port"]
-    password := spice_args["password"]
+	hostname := spice_args["hostname"]
+	port := spice_args["port"]
+
+	spice_conn, err := net.DialTimeout("tcp", hostname+":"+port, 3*time.Second)
+	if err != nil {
+		utils.Println("Can not connect to spice server:", err)
+		return
+	}
+
+	spice_conn_buf_reader := bufio.NewReader(spice_conn)
+	spice_conn_buf_writer := bufio.NewWriter(spice_conn)
+
+	buf := make([]byte, 4096)
+
+	go func() {
+		for {
+			_, err := spice_conn_buf_reader.Read(buf)
+			if err != nil {
+				utils.Println("Error read from spice server:", err)
+				return
+			}
+			err = ws.WriteMessage(websocket.BinaryMessage, buf)
+			if err != nil {
+				utils.Println("websocket writemessage failed:", err)
+				return
+			}
+		}
+	}()
+
+	for {
+		message_type, message, err := ws.ReadMessage()
+		if err != nil {
+			utils.Println("websocket readmessage failed:", err)
+			return
+		}
+		if message_type != websocket.BinaryMessage {
+			utils.Println("invalid message type:", message_type)
+			return
+		}
+
+		spice_conn_buf_writer.Write(message)
+	}
 }
