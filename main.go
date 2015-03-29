@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/astaxie/beego"
 	"github.com/shelmesky/rconsole/controllers/primary"
-	"github.com/shelmesky/rconsole/controllers/websocket"
 	"github.com/shelmesky/rconsole/controllers/spice"
+	"github.com/shelmesky/rconsole/controllers/websocket"
 	"runtime"
 )
 

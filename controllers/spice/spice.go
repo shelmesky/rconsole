@@ -15,7 +15,7 @@ type SpiceController struct {
 
 var (
 	SUB_PROTOCOLS = []string{"binary"}
-	upgrader = websocket.Upgrader{
+	upgrader      = websocket.Upgrader{
 		ReadBufferSize:  4096,
 		WriteBufferSize: 4096,
 		CheckOrigin:     func(req *http.Request) bool { return true },
@@ -62,10 +62,9 @@ func (this *SpiceController) Get() {
 		return
 	}
 
+	writer_buf := make([]byte, 4096)
 
-    writer_buf := make([]byte, 4096)
-
-    go func() {
+	go func() {
 		for {
 			n, err := spice_conn.Read(writer_buf)
 			if err != nil {
@@ -73,22 +72,21 @@ func (this *SpiceController) Get() {
 				return
 			}
 
-            err = ws.WriteMessage(websocket.BinaryMessage, writer_buf[:n])
+			err = ws.WriteMessage(websocket.BinaryMessage, writer_buf[:n])
 			if err != nil {
 				utils.Println("websocket write failed:", err)
 				return
 			}
 		}
-    }()
-
+	}()
 
 	for {
-        _, data, err := ws.ReadMessage()
-        if err != nil {
-            utils.Println("websocket readmessage failed:", err)
-            return
-        }
+		_, data, err := ws.ReadMessage()
+		if err != nil {
+			utils.Println("websocket readmessage failed:", err)
+			return
+		}
 
-        spice_conn.Write(data)
+		spice_conn.Write(data)
 	}
 }
