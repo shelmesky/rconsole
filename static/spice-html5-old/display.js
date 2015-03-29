@@ -446,9 +446,8 @@ SpiceDisplayConn.prototype.process_channel_message = function(msg)
             /* This .save() is done entirely to enable SPICE_MSG_DISPLAY_RESET */
             canvas.context.save();
             document.getElementById(this.parent.screen_id).appendChild(canvas);
-
-            /* We're going to leave width dynamic, but correctly set the height */
-            document.getElementById(this.parent.screen_id).style.height = m.surface.height + "px";
+            document.getElementById(this.parent.screen_id).setAttribute('width', m.surface.width);
+            document.getElementById(this.parent.screen_id).setAttribute('height', m.surface.height);
             this.hook_events();
         }
         return true;
@@ -528,16 +527,6 @@ SpiceDisplayConn.prototype.process_channel_message = function(msg)
         this.streams[m.id] = undefined;
         return true;
     }
-    if (msg.type == SPICE_MSG_DISPLAY_INVAL_LIST)
-    {
-        var m = new SpiceMsgDisplayInvalList(msg.data);
-        var i;
-        DEBUG > 1 && console.log(this.type + ": MsgInvalList " + m.count + " items");
-        for (i = 0; i < m.count; i++)
-            if (this.cache[m.resources[i].id] != undefined)
-                delete this.cache[m.resources[i].id];
-        return true;
-    }
 
     return false;
 }
@@ -586,7 +575,7 @@ SpiceDisplayConn.prototype.draw_copy_helper = function(o)
     if (o.descriptor && (o.descriptor.flags & SPICE_IMAGE_FLAGS_CACHE_ME))
     {
         if (! ("cache" in this))
-            this.cache = {};
+            this.cache = [];
         this.cache[o.descriptor.id] = o.image_data;
     }
 
@@ -691,7 +680,7 @@ SpiceDisplayConn.prototype.hook_events = function()
         canvas.addEventListener('keyup', handle_keyup);
         canvas.addEventListener('mouseout', handle_mouseout);
         canvas.addEventListener('mouseover', handle_mouseover);
-        canvas.addEventListener('wheel', handle_mousewheel);
+        canvas.addEventListener('mousewheel', handle_mousewheel);
         canvas.focus();
     }
 }
@@ -709,7 +698,7 @@ SpiceDisplayConn.prototype.unhook_events = function()
         canvas.removeEventListener('keyup', handle_keyup);
         canvas.removeEventListener('mouseout', handle_mouseout);
         canvas.removeEventListener('mouseover', handle_mouseover);
-        canvas.removeEventListener('wheel', handle_mousewheel);
+        canvas.removeEventListener('mousewheel', handle_mousewheel);
     }
 }
 
@@ -732,8 +721,6 @@ function handle_mouseover(e)
 
 function handle_mouseout(e)
 {
-    if (this.sc && this.sc.cursor && this.sc.cursor.spice_simulated_cursor)
-        this.sc.cursor.spice_simulated_cursor.style.display = 'none';
     this.blur();
 }
 
@@ -777,7 +764,7 @@ function handle_draw_jpeg_onload()
             (this.o.descriptor.flags & SPICE_IMAGE_FLAGS_CACHE_ME))
         {
             if (! ("cache" in this.o.sc))
-                this.o.sc.cache = {};
+                this.o.sc.cache = [];
 
             this.o.sc.cache[this.o.descriptor.id] = 
                 t.getImageData(0, 0,
@@ -789,15 +776,11 @@ function handle_draw_jpeg_onload()
     {
         context.drawImage(this, this.o.base.box.left, this.o.base.box.top);
 
-        // Give the Garbage collector a clue to recycle this; avoids
-        //  fairly massive memory leaks during video playback
-        this.src = null;
-
         if (this.o.descriptor && 
             (this.o.descriptor.flags & SPICE_IMAGE_FLAGS_CACHE_ME))
         {
             if (! ("cache" in this.o.sc))
-                this.o.sc.cache = {};
+                this.o.sc.cache = [];
 
             this.o.sc.cache[this.o.descriptor.id] = 
                 context.getImageData(this.o.base.box.left, this.o.base.box.top,

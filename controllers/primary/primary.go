@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/shelmesky/rconsole/client"
 	"github.com/shelmesky/rconsole/controllers/websocket"
+	"github.com/shelmesky/rconsole/controllers/spice"
 	"github.com/shelmesky/rconsole/utils"
 	"strings"
 )
@@ -49,6 +50,10 @@ func (this *MainController) Get() {
 		url_args, err = wscontrollers.GetTELNETArgs(this.Ctx)
 	}
 
+    if Type == "spice" {
+		url_args, err = spicecontrollers.GetSPICEArgs(this.Ctx)
+    }
+
 	if err != nil {
 		utils.Println(err)
 		this.Abort("500")
@@ -69,6 +74,14 @@ func (this *MainController) Get() {
 
 	this.Data["CONNECT_ARGS"] = connect_args
 
-	this.TplNames = "index.html"
+    if Type == "spice" {
+        this.Data["PASSWORD"] = url_args["password"]
+    }
+
+    if Type != "spice" {
+	    this.TplNames = "index.html"
+    } else {
+        this.TplNames = "spice-old.html"
+    }
 	this.Render()
 }

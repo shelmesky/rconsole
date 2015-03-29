@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	PROTOCOLS      = []string{"vnc", "rdp", "ssh", "telnet"}
+	PROTOCOLS      = []string{"vnc", "rdp", "ssh", "telnet", "spice"}
 	PROTOCOL_NAME  = "guacamole"
 	BUF_LEN        = 8192
 	INST_TERM_BYTE = byte(inst.INST_TERM[0])

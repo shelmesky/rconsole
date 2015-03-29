@@ -55,10 +55,6 @@ function SpiceConn(o)
         this.password = o.password;
     if (o.onerror !== undefined)
         this.onerror = o.onerror;
-    if (o.onsuccess !== undefined)
-        this.onsuccess = o.onsuccess;
-    if (o.onagent !== undefined)
-        this.onagent = o.onagent;
 
     this.state = "connecting";
     this.ws.parent = this;
@@ -78,9 +74,7 @@ function SpiceConn(o)
         this.parent.state = "start";
     });
     this.ws.addEventListener('error', function(e) {
-        if ('url' in e.target) {
-            this.parent.log_err("WebSocket error: Can't connect to websocket on URL: " + e.target.url);
-        }
+        this.parent.log_err(">> WebSockets.onerror" + e.toString());
         this.parent.report_error(e);
     });
     this.ws.addEventListener('close', function(e) {
@@ -123,15 +117,6 @@ SpiceConn.prototype =
         msg.common_caps.push(
             (1 << SPICE_COMMON_CAP_PROTOCOL_AUTH_SELECTION) |
             (1 << SPICE_COMMON_CAP_MINI_HEADER)
-            );
-
-        if (msg.channel_type == SPICE_CHANNEL_PLAYBACK)
-            msg.channel_caps.push(
-                (1 << SPICE_PLAYBACK_CAP_OPUS)
-            );
-        else if (msg.channel_type == SPICE_CHANNEL_MAIN)
-            msg.channel_caps.push(
-                (1 << SPICE_MAIN_CAP_AGENT_CONNECTED_TOKENS)
             );
 
         hdr.size = msg.buffer_size();
@@ -331,17 +316,19 @@ SpiceConn.prototype =
         var rc;
         DEBUG > 0 && console.log("<< hdr " + this.channel_type() + " type " + msg.type + " size " + (msg.data && msg.data.byteLength));
         rc = this.process_common_messages(msg);
-        if (! rc)
+        if (rc)
+            return rc;
+
+        if (this.process_channel_message)
+            rc = this.process_channel_message(msg);
+        else
         {
-            if (this.process_channel_message)
-            {
-                rc = this.process_channel_message(msg);
-                if (! rc)
-                    this.log_warn(this.type + ": Unknown message type " + msg.type + "!");
-            }
-            else
-                this.log_err(this.type + ": No message handlers for this channel; message " + msg.type);
+            this.log_err(this.type + ": No message handlers for this channel; message " + msg.type);
+            return false;
         }
+
+        if (! rc)
+            this.log_warn(this.type + ": Unknown message type " + msg.type + "!");
 
         if (this.msgs_until_ack !== undefined && this.ack_window)
         {
@@ -431,12 +418,6 @@ SpiceConn.prototype =
             this.onerror(e);
         else
             throw(e);
-    },
-
-    report_success: function(m)
-    {
-        if (this.onsuccess != undefined)
-            this.onsuccess(m);
     },
 
     cleanup: function()

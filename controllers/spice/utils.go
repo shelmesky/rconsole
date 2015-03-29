@@ -6,7 +6,7 @@ import (
 )
 
 
-func GetSpiceArgs(context *context.Context) (map[string]string, error) {
+func GetSPICEArgs(context *context.Context) (map[string]string, error) {
 	spice_args := make(map[string]string, 0)
 
 	Type := context.Input.Query("type")
@@ -23,6 +23,8 @@ func GetSpiceArgs(context *context.Context) (map[string]string, error) {
     if spice_args["hostname"] == "" || spice_args["port"] == "" {
         goto get_args_failed
     }
+
+    return spice_args, nil
 
 get_args_failed:
 	return spice_args, fmt.Errorf("get args for SPICE protocol failed!\n")

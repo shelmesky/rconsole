@@ -80,20 +80,6 @@ SpiceCursorConn.prototype.process_channel_message = function(msg)
         return true;
     }
 
-    if (msg.type == SPICE_MSG_CURSOR_RESET)
-    {
-        DEBUG > 1 && console.log("SpiceMsgCursorReset");
-        document.getElementById(this.parent.screen_id).style.cursor = "auto";
-        return true;
-    }
-
-    if (msg.type == SPICE_MSG_CURSOR_INVAL_ALL)
-    {
-        DEBUG > 1 && console.log("SpiceMsgCursorInvalAll");
-        // FIXME - There may be something useful to do here...
-        return true;
-    }
-
     return false;
 }
 
@@ -102,9 +88,5 @@ SpiceCursorConn.prototype.set_cursor = function(cursor)
     var pngstr = create_rgba_png(cursor.header.height, cursor.header.width, cursor.data);
     var curstr = 'url(data:image/png,' + pngstr + ') ' + 
         cursor.header.hot_spot_x + ' ' + cursor.header.hot_spot_y + ", default";
-    var screen = document.getElementById(this.parent.screen_id);
-    screen.style.cursor = 'auto';
-    screen.style.cursor = curstr;
-    if (window.getComputedStyle(screen, null).cursor == 'auto')
-        SpiceSimulateCursor.simulate_cursor(this, cursor, screen, pngstr);
+    document.getElementById(this.parent.screen_id).style.cursor = curstr;
 }

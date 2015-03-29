@@ -348,44 +348,6 @@ SpiceMsgMainMouseMode.prototype =
     },
 }
 
-function SpiceMsgMainAgentData(a, at)
-{
-    this.from_buffer(a, at);
-}
-
-SpiceMsgMainAgentData.prototype =
-{
-    from_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        this.protocol = dv.getUint32(at, true); at += 4;
-        this.type = dv.getUint32(at, true); at += 4;
-        this.opaque = dv.getUint64(at, true); at += 8;
-        this.size = dv.getUint32(at, true); at += 4;
-        if (a.byteLength > at)
-        {
-            this.data = a.slice(at);
-            at += this.data.byteLength;
-        }
-    }
-}
-
-function SpiceMsgMainAgentTokens(a, at)
-{
-    this.from_buffer(a, at);
-}
-
-SpiceMsgMainAgentTokens.prototype =
-{
-    from_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        this.num_tokens = dv.getUint32(at, true); at += 4;
-    },
-}
-
 function SpiceMsgSetAck(a, at)
 {
     this.from_buffer(a, at);
@@ -440,201 +402,6 @@ SpiceMsgcMainMouseModeRequest.prototype =
     }
 }
 
-function SpiceMsgcMainAgentStart(num_tokens)
-{
-    this.num_tokens = num_tokens;
-}
-
-SpiceMsgcMainAgentStart.prototype =
-{
-    to_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        dv.setUint32(at, this.num_tokens, true); at += 4;
-    },
-    buffer_size: function()
-    {
-        return 4;
-    }
-}
-
-function SpiceMsgcMainAgentData(type, data)
-{
-    this.protocol = VD_AGENT_PROTOCOL;
-    this.type = type;
-    this.opaque = 0;
-    this.size = data.buffer_size();
-    this.data = data;
-}
-
-SpiceMsgcMainAgentData.prototype =
-{
-    to_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        dv.setUint32(at, this.protocol, true); at += 4;
-        dv.setUint32(at, this.type, true); at += 4;
-        dv.setUint64(at, this.opaque, true); at += 8;
-        dv.setUint32(at, this.size, true); at += 4;
-        this.data.to_buffer(a, at);
-    },
-    buffer_size: function()
-    {
-        return 4 + 4 + 8 + 4 + this.data.buffer_size();
-    }
-}
-
-function VDAgentAnnounceCapabilities(request, caps)
-{
-    if (caps)
-    {
-        this.request = request;
-        this.caps = caps;
-    }
-    else
-        this.from_buffer(request);
-}
-
-VDAgentAnnounceCapabilities.prototype =
-{
-    to_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        dv.setUint32(at, this.request, true); at += 4;
-        dv.setUint32(at, this.caps, true); at += 4;
-    },
-    from_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        this.request = dv.getUint32(at, true); at += 4;
-        this.caps = dv.getUint32(at, true); at += 4;
-        return at;
-    },
-    buffer_size: function()
-    {
-        return 8;
-    }
-}
-
-function VDAgentMonitorsConfig(flags, width, height, depth, x, y)
-{
-    this.num_mon = 1;
-    this.flags = flags;
-    this.width = width;
-    this.height = height;
-    this.depth = depth;
-    this.x = x;
-    this.y = y;
-}
-
-VDAgentMonitorsConfig.prototype =
-{
-    to_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        dv.setUint32(at, this.num_mon, true); at += 4;
-        dv.setUint32(at, this.flags, true); at += 4;
-        dv.setUint32(at, this.height, true); at += 4;
-        dv.setUint32(at, this.width, true); at += 4;
-        dv.setUint32(at, this.depth, true); at += 4;
-        dv.setUint32(at, this.x, true); at += 4;
-        dv.setUint32(at, this.y, true); at += 4;
-    },
-    buffer_size: function()
-    {
-        return 28;
-    }
-}
-
-function VDAgentFileXferStatusMessage(data, result)
-{
-    if (result)
-    {
-        this.id = data;
-        this.result = result;
-    }
-    else
-        this.from_buffer(data);
-}
-
-VDAgentFileXferStatusMessage.prototype =
-{
-    to_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        dv.setUint32(at, this.id, true); at += 4;
-        dv.setUint32(at, this.result, true); at += 4;
-    },
-    from_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        this.id = dv.getUint32(at, true); at += 4;
-        this.result = dv.getUint32(at, true); at += 4;
-        return at;
-    },
-    buffer_size: function()
-    {
-        return 8;
-    }
-}
-
-function VDAgentFileXferStartMessage(id, name, size)
-{
-    this.id = id;
-    this.string = "[vdagent-file-xfer]\n"+"name="+name+"\nsize="+size+"\n";
-}
-
-VDAgentFileXferStartMessage.prototype =
-{
-    to_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        dv.setUint32(at, this.id, true); at += 4;
-        for (var i = 0; i < this.string.length; i++, at++)
-            dv.setUint8(at, this.string.charCodeAt(i));
-    },
-    buffer_size: function()
-    {
-        return 4 + this.string.length + 1;
-    }
-}
-
-function VDAgentFileXferDataMessage(id, size, data)
-{
-    this.id = id;
-    this.size = size;
-    this.data = data;
-}
-
-VDAgentFileXferDataMessage.prototype =
-{
-    to_buffer: function(a, at)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        dv.setUint32(at, this.id, true); at += 4;
-        dv.setUint64(at, this.size, true); at += 8;
-        if (this.data && this.data.byteLength > 0)
-        {
-            var u8arr = new Uint8Array(this.data);
-            for (var i = 0; i < u8arr.length; i++, at++)
-                dv.setUint8(at, u8arr[i]);
-        }
-    },
-    buffer_size: function()
-    {
-        return 12 + this.size;
-    }
-}
-
 function SpiceMsgNotify(a, at)
 {
     this.from_buffer(a, at);
@@ -647,7 +414,9 @@ SpiceMsgNotify.prototype =
         at = at || 0;
         var i;
         var dv = new SpiceDataView(a);
-        this.time_stamp = dv.getUint64(at, true); at += 8;
+        this.time_stamp = [];
+        this.time_stamp[0] = dv.getUint32(at, true); at += 4;
+        this.time_stamp[1] = dv.getUint32(at, true); at += 4;
         this.severity = dv.getUint32(at, true); at += 4;
         this.visibility = dv.getUint32(at, true); at += 4;
         this.what = dv.getUint32(at, true); at += 4;
@@ -676,7 +445,8 @@ SpiceMsgcDisplayInit.prototype =
         at = at || 0;
         var dv = new SpiceDataView(a);
         dv.setUint8(at, this.pixmap_cache_id, true); at++;
-        dv.setUint64(at, this.pixmap_cache_size, true); at += 8;
+        dv.setUint32(at, 0, true); at += 4;
+        dv.setUint32(at, this.pixmap_cache_size, true); at += 4;
         dv.setUint8(at, this.glz_dictionary_id, true); at++;
         dv.setUint32(at, this.glz_dictionary_window_size, true); at += 4;
     },
@@ -841,69 +611,6 @@ SpiceMsgCursorInit.prototype =
     },
 }
 
-function SpiceMsgPlaybackData(a, at)
-{
-    this.from_buffer(a, at);
-}
-
-SpiceMsgPlaybackData.prototype =
-{
-    from_buffer: function(a, at, mb)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        this.time = dv.getUint32(at, true); at += 4;
-        if (a.byteLength > at)
-        {
-            this.data = a.slice(at);
-            at += this.data.byteLength;
-        }
-        return at;
-    },
-}
-
-function SpiceMsgPlaybackMode(a, at)
-{
-    this.from_buffer(a, at);
-}
-
-SpiceMsgPlaybackMode.prototype =
-{
-    from_buffer: function(a, at, mb)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        this.time = dv.getUint32(at, true); at += 4;
-        this.mode = dv.getUint16(at, true); at += 2;
-        if (a.byteLength > at)
-        {
-            this.data = a.slice(at);
-            at += this.data.byteLength;
-        }
-        return at;
-    },
-}
-
-function SpiceMsgPlaybackStart(a, at)
-{
-    this.from_buffer(a, at);
-}
-
-SpiceMsgPlaybackStart.prototype =
-{
-    from_buffer: function(a, at, mb)
-    {
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        this.channels = dv.getUint32(at, true); at += 4;
-        this.format = dv.getUint16(at, true); at += 2;
-        this.frequency = dv.getUint32(at, true); at += 4;
-        this.time = dv.getUint32(at, true); at += 4;
-        return at;
-    },
-}
-
-
 
 function SpiceMsgCursorSet(a, at)
 {
@@ -932,11 +639,8 @@ function SpiceMsgcMousePosition(sc, e)
     this.buttons_state = sc.buttons_state;
     if (e)
     {
-        var scrollTop = document.body.scrollTop || document.documentElement.scrollTop;
-        var scrollLeft = document.body.scrollLeft || document.documentElement.scrollLeft;
-
-        this.x = e.clientX - sc.display.surfaces[sc.display.primary_surface].canvas.offsetLeft + scrollLeft;
-        this.y = e.clientY - sc.display.surfaces[sc.display.primary_surface].canvas.offsetTop + scrollTop;
+        this.x = e.clientX - sc.display.surfaces[sc.display.primary_surface].canvas.offsetLeft + document.body.scrollLeft;
+        this.y = e.clientY - sc.display.surfaces[sc.display.primary_surface].canvas.offsetTop + document.body.scrollTop;
         sc.mousex = this.x;
         sc.mousey = this.y; 
     }
@@ -1101,7 +805,7 @@ SpiceMsgDisplayStreamCreate.prototype =
         this.id = dv.getUint32(at, true); at += 4;
         this.flags = dv.getUint8(at, true); at += 1;
         this.codec_type = dv.getUint8(at, true); at += 1;
-        this.stamp = dv.getUint64(at, true); at += 8;
+        /*stamp */ at += 8;
         this.stream_width = dv.getUint32(at, true); at += 4;
         this.stream_height = dv.getUint32(at, true); at += 4;
         this.src_width = dv.getUint32(at, true); at += 4;
@@ -1175,29 +879,5 @@ SpiceMsgDisplayStreamDestroy.prototype =
         at = at || 0;
         var dv = new SpiceDataView(a);
         this.id = dv.getUint32(at, true); at += 4;
-    },
-}
-
-function SpiceMsgDisplayInvalList(a, at)
-{
-    this.count = 0;
-    this.resources = [];
-    this.from_buffer(a,at);
-}
-
-SpiceMsgDisplayInvalList.prototype =
-{
-    from_buffer: function (a, at)
-    {
-        var i;
-        at = at || 0;
-        var dv = new SpiceDataView(a);
-        this.count = dv.getUint16(at, true); at += 2;
-        for (i = 0; i < this.count; i++)
-        {
-            this.resources[i] = {};
-            this.resources[i].type = dv.getUint8(at, true); at++;
-            this.resources[i].id = dv.getUint64(at, true); at += 8;
-        }
     },
 }

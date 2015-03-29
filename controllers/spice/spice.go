@@ -1,7 +1,6 @@
 package spicecontrollers
 
 import (
-	"bufio"
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 	"github.com/shelmesky/rconsole/utils"
@@ -15,10 +14,12 @@ type SpiceController struct {
 }
 
 var (
+	SUB_PROTOCOLS = []string{"binary"}
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  4096,
 		WriteBufferSize: 4096,
 		CheckOrigin:     func(req *http.Request) bool { return true },
+		Subprotocols:    SUB_PROTOCOLS,
 	}
 )
 
@@ -41,7 +42,7 @@ func (this *SpiceController) Get() {
 		return
 	}
 
-	spice_args, err := GetSpiceArgs(this.Ctx)
+	spice_args, err := GetSPICEArgs(this.Ctx)
 	if err != nil {
 		utils.Println("get args for SPICE failed:", err)
 		return
@@ -61,37 +62,33 @@ func (this *SpiceController) Get() {
 		return
 	}
 
-	spice_conn_buf_reader := bufio.NewReader(spice_conn)
-	spice_conn_buf_writer := bufio.NewWriter(spice_conn)
 
-	buf := make([]byte, 4096)
+    writer_buf := make([]byte, 4096)
 
-	go func() {
+    go func() {
 		for {
-			_, err := spice_conn_buf_reader.Read(buf)
+			n, err := spice_conn.Read(writer_buf)
 			if err != nil {
 				utils.Println("Error read from spice server:", err)
 				return
 			}
-			err = ws.WriteMessage(websocket.BinaryMessage, buf)
+
+            err = ws.WriteMessage(websocket.BinaryMessage, writer_buf[:n])
 			if err != nil {
-				utils.Println("websocket writemessage failed:", err)
+				utils.Println("websocket write failed:", err)
 				return
 			}
 		}
-	}()
+    }()
+
 
 	for {
-		message_type, message, err := ws.ReadMessage()
-		if err != nil {
-			utils.Println("websocket readmessage failed:", err)
-			return
-		}
-		if message_type != websocket.BinaryMessage {
-			utils.Println("invalid message type:", message_type)
-			return
-		}
+        _, data, err := ws.ReadMessage()
+        if err != nil {
+            utils.Println("websocket readmessage failed:", err)
+            return
+        }
 
-		spice_conn_buf_writer.Write(message)
+        spice_conn.Write(data)
 	}
 }
