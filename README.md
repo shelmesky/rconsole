@@ -34,3 +34,7 @@ http://127.0.0.1:9999/connect?type=ssh&hostname=172.31.31.110&port=22&username=r
 
 http://127.0.0.1:9999/connect?type=telnet&hostname=172.31.31.110&port=23&username=roy&width=1024&height=660
 
+#### SPICE:
+
+http://127.0.0.1:9999/connect?type=spice&hostname=127.0.0.1&port=5900&password=123
+
