@@ -78,6 +78,8 @@ func (this *Client) BufReceive() string {
 	var line []byte
 	var err error
 
+	// TODO: use ReadSlice instead of ReadBytes
+	// 'cause ReadBytes allcate memory every time
 	line, err = this.BufReader.ReadBytes(INST_TERM_BYTE)
 	if err != nil {
 		return string(line)

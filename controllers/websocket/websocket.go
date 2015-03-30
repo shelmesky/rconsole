@@ -102,6 +102,7 @@ func (this *WebSocketController) Get() {
 		}
 	}()
 
+	// TODO: use ws.NextReader to reuse memory allocation
 	for {
 		message_type, message, err := ws.ReadMessage()
 		if err != nil {
