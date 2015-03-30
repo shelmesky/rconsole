@@ -80,6 +80,8 @@ func (this *SpiceController) Get() {
 		}
 	}()
 
+	// TODO: use ws.NextReader to reuse memory allocation
+
 	for {
 		_, data, err := ws.ReadMessage()
 		if err != nil {

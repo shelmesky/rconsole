@@ -73,6 +73,7 @@ func (this *Client) Close() {
 	}
 }
 
+// TODO: reuse memory allocation with global buffer
 func (this *Client) BufReceive() string {
 	var line []byte
 	var err error
