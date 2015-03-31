@@ -1,6 +1,7 @@
 package wscontrollers
 
 import (
+	"bytes"
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 	rclient "github.com/shelmesky/rconsole/client"
@@ -102,18 +103,22 @@ func (this *WebSocketController) Get() {
 		}
 	}()
 
-	// TODO: use ws.NextReader to reuse memory allocation
+	read_buffer := make([]byte, 0, 4096)
+	buf := bytes.NewBuffer(read_buffer)
+
 	for {
-		message_type, message, err := ws.ReadMessage()
+		message_type, reader, err := ws.NextReader()
 		if err != nil {
-			utils.Println("websocket readmessage failed:", err)
-			return
-		}
-		if message_type != websocket.TextMessage {
-			utils.Println("invalid message type:", message_type)
+			utils.Printf("failed when call NextReader: %s, message_type: %d\n", err, message_type)
 			return
 		}
 
-		client.Send(message)
+		buf.Truncate(0)
+		n, err := buf.ReadFrom(reader)
+		if err != nil {
+			utils.Println(n, err)
+		}
+
+		client.Send(buf.Bytes())
 	}
 }
