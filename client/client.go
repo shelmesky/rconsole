@@ -13,7 +13,7 @@ import (
 var (
 	PROTOCOLS      = []string{"vnc", "rdp", "ssh", "telnet", "spice"}
 	PROTOCOL_NAME  = "guacamole"
-	BUF_LEN        = 8192
+	BUF_LEN        = 4096
 	INST_TERM_BYTE = byte(inst.INST_TERM[0])
 )
 
@@ -26,16 +26,19 @@ type Client struct {
 	BufWriter      *bufio.Writer
 	Connected      bool
 	Debug          bool
+	ReadBuffer     []byte
 }
 
 func NewClient(host, port string, timeout time.Duration, debug bool) *Client {
-	return &Client{
+	c := &Client{
 		Host:      host,
 		Port:      port,
 		Timeout:   timeout,
 		Connected: false,
 		Debug:     debug,
 	}
+	c.ReadBuffer = make([]byte, BUF_LEN)
+	return c
 }
 
 func (this *Client) GetClient() net.Conn {
@@ -73,14 +76,11 @@ func (this *Client) Close() {
 	}
 }
 
-// TODO: reuse memory allocation with global buffer
 func (this *Client) BufReceive() string {
 	var line []byte
 	var err error
 
-	// TODO: use ReadSlice instead of ReadBytes
-	// 'cause ReadBytes allcate memory every time
-	line, err = this.BufReader.ReadBytes(INST_TERM_BYTE)
+	line, err = ReadBytes(this.BufReader, this.ReadBuffer, INST_TERM_BYTE)
 	if err != nil {
 		return string(line)
 	}
@@ -208,6 +208,50 @@ func (this *Client) HandShake(protocol, width, height, dpi string, audio []strin
 	}
 
 	return true
+}
+
+func ReadBytes(reader *bufio.Reader, buf []byte, delim byte) (line []byte, err error) {
+	// Use ReadSlice to look for array,
+	// accumulating full buffers.
+	var frag []byte
+	var full [][]byte
+	err = nil
+
+	for {
+		var e error
+		frag, e = reader.ReadSlice(delim)
+		if e == nil { // got final fragment
+			break
+		}
+		if e != bufio.ErrBufferFull { // unexpected error
+			err = e
+			break
+		}
+
+		// Make a copy of the buffer.
+		buf := make([]byte, len(frag))
+		copy(buf, frag)
+		full = append(full, buf)
+	}
+
+	// Allocate new buffer to hold the full pieces and the fragment.
+	n := 0
+	for i := range full {
+		n += len(full[i])
+	}
+	n += len(frag)
+
+	// Copy full pieces and fragment in.
+	if n > cap(buf) {
+		buf = make([]byte, n)
+	}
+
+	n = 0
+	for i := range full {
+		n += copy(buf[n:], full[i])
+	}
+	copy(buf[n:], frag)
+	return buf[:n+len(frag)], err
 }
 
 /*
