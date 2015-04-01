@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/shelmesky/rconsole/controllers/primary"
 	"github.com/shelmesky/rconsole/controllers/spice"
+	"github.com/shelmesky/rconsole/controllers/libvirt"
 	"github.com/shelmesky/rconsole/controllers/websocket"
 	"runtime"
 )
@@ -15,5 +16,6 @@ func main() {
 	beego.Router("/connect", &controllers.MainController{})
 	beego.Router("/ws", &wscontrollers.WebSocketController{})
 	beego.Router("/ws/spice", &spicecontrollers.SpiceController{})
+	beego.Router("/ws/libvirt", &libvirtcontrollers.LibvirtController{})
 	beego.Run()
 }
