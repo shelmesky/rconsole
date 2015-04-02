@@ -1,6 +1,8 @@
 package libvirtcontrollers
 
 import (
+    "time"
+    "net"
     "net/http"
 	"github.com/astaxie/beego"
 	"github.com/shelmesky/rconsole/libvirt"
@@ -23,6 +25,8 @@ var (
 )
 
 func (this *LibvirtController) Get() {
+    var console_host string
+    var console_port string
 	ws, err := upgrader.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil)
 	if err != nil {
 		utils.Println("websocket upgrade failed:", err)
@@ -34,20 +38,68 @@ func (this *LibvirtController) Get() {
 		ws.Close()
 	}()
 
-    virt_conn, err := libvirt.GetConn("127.0.0.1", "16509")
+    libvirt_args, err := GetLIBVIRTArgs(this.Ctx)
     if err != nil {
         utils.Println(err)
+        return
     }
 
-    dom, err := virt_conn.LookupDomainByName("win7")
+	if libvirt_args == nil {
+		utils.Println("empty args for LIBVIRT")
+		return
+	}
+
+    libvirt_host := libvirt_args["hostname"]
+    libvirt_port := libvirt_args["port"]
+    vm_name := libvirt_args["vm"]
+
+    graphics, err := libvirt.GetDomainGraphics(libvirt_host, libvirt_port, vm_name)
     if err != nil {
         utils.Println(err)
+        return
     }
 
-    dom_str, err := dom.GetXMLDesc(0)
+    if graphics.Listen.Address == "0.0.0.0" {
+        console_host = libvirt_host
+    } else {
+        console_host = graphics.Listen.Address
+    }
+
+    console_port = graphics.Port
+
+    console_conn, err := net.DialTimeout("tcp", console_host+":"+console_port, 3*time.Second)
     if err != nil {
-        utils.Println(err)
-    }
+		utils.Println("Can not connect to console host:", err)
+		return
+	}
 
-    utils.Println(dom_str)
+    writer_buf := make([]byte, 4096)
+
+	go func() {
+		for {
+			n, err := console_conn.Read(writer_buf)
+			if err != nil {
+				utils.Println("Error read from console host:", err)
+				return
+			}
+
+			err = ws.WriteMessage(websocket.BinaryMessage, writer_buf[:n])
+			if err != nil {
+				utils.Println("websocket write failed:", err)
+				return
+			}
+		}
+	}()
+
+	// TODO: use ws.NextReader to reuse memory allocation
+
+	for {
+		_, data, err := ws.ReadMessage()
+		if err != nil {
+			utils.Println("websocket readmessage failed:", err)
+			return
+		}
+
+		console_conn.Write(data)
+	}
 }
