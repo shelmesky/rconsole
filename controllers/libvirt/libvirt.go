@@ -1,13 +1,13 @@
 package libvirtcontrollers
 
 import (
-    "time"
-    "net"
-    "net/http"
 	"github.com/astaxie/beego"
+	"github.com/gorilla/websocket"
 	"github.com/shelmesky/rconsole/libvirt"
 	"github.com/shelmesky/rconsole/utils"
-	"github.com/gorilla/websocket"
+	"net"
+	"net/http"
+	"time"
 )
 
 type LibvirtController struct {
@@ -25,8 +25,8 @@ var (
 )
 
 func (this *LibvirtController) Get() {
-    var console_host string
-    var console_port string
+	var console_host string
+	var console_port string
 	ws, err := upgrader.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil)
 	if err != nil {
 		utils.Println("websocket upgrade failed:", err)
@@ -38,42 +38,42 @@ func (this *LibvirtController) Get() {
 		ws.Close()
 	}()
 
-    libvirt_args, err := GetLIBVIRTArgs(this.Ctx)
-    if err != nil {
-        utils.Println(err)
-        return
-    }
+	libvirt_args, err := GetLIBVIRTArgs(this.Ctx)
+	if err != nil {
+		utils.Println(err)
+		return
+	}
 
 	if libvirt_args == nil {
 		utils.Println("empty args for LIBVIRT")
 		return
 	}
 
-    libvirt_host := libvirt_args["hostname"]
-    libvirt_port := libvirt_args["port"]
-    vm_name := libvirt_args["vm"]
+	libvirt_host := libvirt_args["hostname"]
+	libvirt_port := libvirt_args["port"]
+	vm_name := libvirt_args["vm"]
 
-    graphics, err := libvirt.GetDomainGraphics(libvirt_host, libvirt_port, vm_name)
-    if err != nil {
-        utils.Println(err)
-        return
-    }
+	graphics, err := libvirt.GetDomainGraphics(libvirt_host, libvirt_port, vm_name)
+	if err != nil {
+		utils.Println(err)
+		return
+	}
 
-    if graphics.Listen.Address == "0.0.0.0" {
-        console_host = libvirt_host
-    } else {
-        console_host = graphics.Listen.Address
-    }
+	if graphics.Listen.Address == "0.0.0.0" {
+		console_host = libvirt_host
+	} else {
+		console_host = graphics.Listen.Address
+	}
 
-    console_port = graphics.Port
+	console_port = graphics.Port
 
-    console_conn, err := net.DialTimeout("tcp", console_host+":"+console_port, 3*time.Second)
-    if err != nil {
+	console_conn, err := net.DialTimeout("tcp", console_host+":"+console_port, 3*time.Second)
+	if err != nil {
 		utils.Println("Can not connect to console host:", err)
 		return
 	}
 
-    writer_buf := make([]byte, 4096)
+	writer_buf := make([]byte, 4096)
 
 	go func() {
 		for {
