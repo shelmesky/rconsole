@@ -38,3 +38,6 @@ http://127.0.0.1:9999/connect?type=telnet&hostname=172.31.31.110&port=23&usernam
 
 http://127.0.0.1:9999/connect?type=spice&hostname=127.0.0.1&port=5900&password=123
 
+#### Libvirt:
+
+http://127.0.0.1:9999/connect?type=libvirt&hostname=127.0.0.1&port=16509&vm=win7
