@@ -106,7 +106,7 @@ func (this *MainController) Get() {
 	}
 
 	if Type == "spice" {
-		this.TplNames = "spice-old.html"
+		this.TplNames = "spice.html"
 	} else if Type == "libvirt" && kvm_console_type == "vnc" {
 		if url_args["shared"] == "yes" {
 			this.Data["VNC_SHARED"] = "yes"
