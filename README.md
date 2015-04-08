@@ -44,4 +44,4 @@ http://127.0.0.1:9999/connect?type=spice&hostname=127.0.0.1&port=5900&password=1
 
 #### Libvirt:
 
-http://127.0.0.1:9999/connect?type=libvirt&hostname=127.0.0.1&port=16509&vm=win7
+http://127.0.0.1:9999/connect?type=libvirt&hostname=127.0.0.1&port=16509&vm=win7&shared=yes

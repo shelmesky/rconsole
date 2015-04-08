@@ -18,6 +18,7 @@ func GetLIBVIRTArgs(context *context.Context) (map[string]string, error) {
 	libvirt_args["hostname"] = context.Input.Query("hostname")
 	libvirt_args["port"] = context.Input.Query("port")
 	libvirt_args["vm"] = context.Input.Query("vm")
+	libvirt_args["shared"] = context.Input.Query("shared")
 
 	if libvirt_args["hostname"] == "" || libvirt_args["port"] == "" {
 		goto get_args_failed
