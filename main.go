@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/astaxie/beego"
+	"github.com/shelmesky/rconsole/controllers/api"
 	"github.com/shelmesky/rconsole/controllers/libvirt"
 	"github.com/shelmesky/rconsole/controllers/primary"
 	"github.com/shelmesky/rconsole/controllers/spice"
@@ -216,5 +217,11 @@ func main() {
 	beego.Router("/ws", &wscontrollers.WebSocketController{})
 	beego.Router("/ws/spice", &spicecontrollers.SpiceController{})
 	beego.Router("/ws/libvirt", &libvirtcontrollers.LibvirtController{})
+
+	beego.Router("/api/conn/list", &managercontrollers.ConnectionManagerController{}, "get:ListConnection")
+	beego.Router("/api/conn/create", &managercontrollers.ConnectionManagerController{}, "post:CreateConnection")
+	beego.Router("/api/conn/update", &managercontrollers.ConnectionManagerController{}, "put:UpdateConnection")
+	beego.Router("/api/conn/delete", &managercontrollers.ConnectionManagerController{}, "delete:DeleteConnection")
+
 	beego.Run()
 }
