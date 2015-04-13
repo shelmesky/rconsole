@@ -219,8 +219,8 @@ func main() {
 	beego.Router("/ws/libvirt", &libvirtcontrollers.LibvirtController{})
 
 	beego.Router("/api/conn/list", &managercontrollers.ConnectionManagerController{}, "get:ListConnection")
-	beego.Router("/api/conn/create", &managercontrollers.ConnectionManagerController{}, "post:CreateConnection")
-	beego.Router("/api/conn/update", &managercontrollers.ConnectionManagerController{}, "put:UpdateConnection")
+	beego.Router("/api/conn/create/:conn_type([a-z]+)", &managercontrollers.ConnectionManagerController{}, "post:CreateConnection")
+	beego.Router("/api/conn/update/:conn_type([a-z]+)", &managercontrollers.ConnectionManagerController{}, "put:UpdateConnection")
 	beego.Router("/api/conn/delete", &managercontrollers.ConnectionManagerController{}, "delete:DeleteConnection")
 
 	beego.Run()
