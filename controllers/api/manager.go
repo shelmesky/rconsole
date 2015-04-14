@@ -173,7 +173,6 @@ func (this *ConnectionManagerController) CreateConnection() {
 						insert_failed_reason = fmt.Sprintf("save ssh args failed: %s, args: %s", err, *args)
 					}
 				}
-
 			}
 		}
 
@@ -197,7 +196,6 @@ func (this *ConnectionManagerController) CreateConnection() {
 						insert_failed_reason = fmt.Sprintf("save telnet args failed: %s, args: %s", err, *args)
 					}
 				}
-
 			}
 		}
 
@@ -221,7 +219,6 @@ func (this *ConnectionManagerController) CreateConnection() {
 						insert_failed_reason = fmt.Sprintf("save spice args failed: %s, args: %s", err, *args)
 					}
 				}
-
 			}
 		}
 
