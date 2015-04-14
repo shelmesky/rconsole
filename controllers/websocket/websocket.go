@@ -85,6 +85,8 @@ func (this *WebSocketController) Get() {
 		return
 	}
 
+	defer client.Close()
+
 	ret := client.HandShake(protocol_type, width, height, dpi, []string{}, []string{}, url_args)
 	if !ret {
 		utils.Println("handshake failed!")

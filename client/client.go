@@ -221,7 +221,6 @@ func (this *Client) HandShake(protocol, width, height, dpi string, audio []strin
 
 	// 2. Receive "args" instruction
 	instruction := this.ReadInstruction()
-	utils.Println("######", instruction)
 	utils.Printf("Expecting 'args' instruction, received: %s\n", instruction.String())
 
 	if instruction == nil {
