@@ -119,7 +119,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = this.InsertOne(*args)
+					err = mongo.InsertOne(*args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save vnc args failed: %s, args: %s", err, *args)
@@ -141,7 +141,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = this.InsertOne(*args)
+					err = mongo.InsertOne(*args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save rdp args failed: %s, args: %s", err, *args)
@@ -163,7 +163,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = this.InsertOne(*args)
+					err = mongo.InsertOne(*args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save ssh args failed: %s, args: %s", err, *args)
@@ -185,7 +185,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = this.InsertOne(*args)
+					err = mongo.InsertOne(*args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save telnet args failed: %s, args: %s", err, *args)
@@ -207,7 +207,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = this.InsertOne(*args)
+					err = mongo.InsertOne(*args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save spice args failed: %s, args: %s", err, *args)
@@ -229,7 +229,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = this.InsertOne(*args)
+					err = mongo.InsertOne(*args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save libvirt args failed: %s, args: %s", err, *args)
@@ -320,20 +320,6 @@ func (this *ConnectionManagerController) DecodeLIBVIRTArgs() (*LIBVIRTArgs, erro
 	libvirt_args.Type = "libvirt"
 	err := this.ParseForm(&libvirt_args)
 	return &libvirt_args, err
-}
-
-func (this *ConnectionManagerController) InsertOne(value interface{}) error {
-	coll, err := mongo.GetCollection("connection")
-	if err != nil {
-		return fmt.Errorf("failed get mongo collection: %s", err)
-	}
-
-	err = coll.Insert(value)
-	if err != nil {
-		return fmt.Errorf("insert mongo failed: %s", err)
-	}
-
-	return nil
 }
 
 func (this *ConnectionManagerController) Valid(value interface{}) error {
