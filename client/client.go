@@ -53,6 +53,8 @@ func (this *ClientPool) Init(servers []Guacd) {
 }
 
 func (this *ClientPool) Get() (*Client, error) {
+	this.lock.RLock()
+	defer this.lock.RUnlock()
 	nano := time.Now().UnixNano()
 	rand.Seed(nano)
 	rndNum := rand.Int63()
