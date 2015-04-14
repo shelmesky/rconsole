@@ -85,6 +85,9 @@ func (this *WebSocketController) Get() {
 		return
 	}
 
+	// 因为websocket客户端断开连接后
+	// 会发送"10.disconnect;"到guacd
+	// 导致guacd断开和guac client的连接
 	defer client.Close()
 
 	ret := client.HandShake(protocol_type, width, height, dpi, []string{}, []string{}, url_args)
