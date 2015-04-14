@@ -3,35 +3,33 @@ package managercontrollers
 import (
 	"fmt"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/validation"
 	"github.com/shelmesky/rconsole/client"
 	"github.com/shelmesky/rconsole/mongo"
 	"github.com/shelmesky/rconsole/utils"
 	"gopkg.in/mgo.v2/bson"
 )
 
-// TODO: 增加结构体字段验证
-// 例如不为空，或类型检查
-
 type VNCArgs struct {
 	ID         bson.ObjectId `form:"-" bson:"_id"`
 	Type       string        `form:"-" bson:"type"`
-	Hostname   string        `form:"hostname" bson:"hostname"`
-	Port       string        `form:"port" bson:"port"`
-	Width      string        `form:"width" bson:"width"`
-	Height     string        `form:"height" bson:"height"`
-	DPI        string        `form:"dpi" bson:"dpi"`
-	ColorDepth string        `form:"color-depth" bson:"color-depth"`
+	Hostname   string        `valid:"Required" form:"hostname" bson:"hostname"`
+	Port       string        `valid:"Required; Numeric" form:"port" bson:"port"`
+	Width      string        `valid:"Required; Numeric" form:"width" bson:"width"`
+	Height     string        `valid:"Required; Numeric" form:"height" bson:"height"`
+	DPI        string        `valid:"Required; Numeric" form:"dpi" bson:"dpi"`
+	ColorDepth string        `valid:"Required; Numeric" form:"color-depth" bson:"color-depth"`
 }
 
 type RDPArgs struct {
 	ID            bson.ObjectId `form:"-" bson:"_id"`
 	Type          string        `form:"-" bson:"type"`
-	Hostname      string        `form:"hostname" bson:"hostname"`
-	Port          string        `form:"port" bson:"port"`
-	Width         string        `form:"width" bson:"width"`
-	Height        string        `form:"height" bson:"height"`
-	DPI           string        `form:"dpi" bson:"dpi"`
-	ColorDepth    string        `form:"color-depth" bson:"color-depth"`
+	Hostname      string        `valid:"Required" form:"hostname" bson:"hostname"`
+	Port          string        `valid:"Required; Numeric" form:"port" bson:"port"`
+	Width         string        `valid:"Required; Numeric" form:"width" bson:"width"`
+	Height        string        `valid:"Required; Numeric" form:"height" bson:"height"`
+	DPI           string        `valid:"Required; Numeric" form:"dpi" bson:"dpi"`
+	ColorDepth    string        `valid:"Required; Numeric" form:"color-depth" bson:"color-depth"`
 	Console       string        `form:"console" bson:"console"`
 	IntialProgram string        `form:"initial-program" bson:"initial-program"`
 	RemoteApp     string        `form:"remote-app" bson:"remote-app"`
@@ -42,11 +40,11 @@ type RDPArgs struct {
 type SSHArgs struct {
 	ID         bson.ObjectId `form:"-" bson:"_id"`
 	Type       string        `form:"-" bson:"type"`
-	Hostname   string        `form:"hostname" bson:"hostname"`
-	Port       string        `form:"port" bson:"port"`
-	Width      string        `form:"width" bson:"width"`
-	Height     string        `form:"height" bson:"height"`
-	DPI        string        `form:"dpi" bson:"dpi"`
+	Hostname   string        `valid:"Required" form:"hostname" bson:"hostname"`
+	Port       string        `valid:"Required; Numeric" form:"port" bson:"port"`
+	Width      string        `valid:"Required; Numeric" form:"width" bson:"width"`
+	Height     string        `valid:"Required; Numeric" form:"height" bson:"height"`
+	DPI        string        `valid:"Required; Numeric" form:"dpi" bson:"dpi"`
 	PrivateKey string        `form:"private-key" bson:"private-key"`
 	Passphrase string        `form:"passphrase" bson:"passphrase"`
 }
@@ -54,11 +52,11 @@ type SSHArgs struct {
 type TELNETArgs struct {
 	ID            bson.ObjectId `form:"-" bson:"_id"`
 	Type          string        `form:"-" bson:"type"`
-	Hostname      string        `form:"hostname" bson:"hostname"`
-	Port          string        `form:"port" bson:"port"`
-	Width         string        `form:"width" bson:"width"`
-	Height        string        `form:"height" bson:"height"`
-	DPI           string        `form:"dpi" bson:"dpi"`
+	Hostname      string        `valid:"Required" form:"hostname" bson:"hostname"`
+	Port          string        `valid:"Required; Numeric" form:"port" bson:"port"`
+	Width         string        `valid:"Required; Numeric" form:"width" bson:"width"`
+	Height        string        `valid:"Required; Numeric" form:"height" bson:"height"`
+	DPI           string        `valid:"Required; Numeric" form:"dpi" bson:"dpi"`
 	UsernameRegex string        `form:"username-regex" bson:"username-regex"`
 	PasswordRegex string        `form:"password-regex" bson:"password-regex"`
 }
@@ -66,18 +64,18 @@ type TELNETArgs struct {
 type SPICEArgs struct {
 	ID       bson.ObjectId `form:"-" bson:"_id"`
 	Type     string        `form:"-" bson:"type"`
-	Hostname string        `form:"hostname" bson:"hostname"`
-	Port     string        `form:"port" bson:"port"`
+	Hostname string        `valid:"Required" form:"hostname" bson:"hostname"`
+	Port     string        `valid:"Required; Numeric" form:"port" bson:"port"`
 	Password string        `form:"password" bson:"password"`
 }
 
 type LIBVIRTArgs struct {
 	ID       bson.ObjectId `form:"-" bson:"_id"`
 	Type     string        `form:"-" bson:"type"`
-	Hostname string        `form:"hostname" bson:"hostname"`
-	Port     string        `form:"port" bson:"port"`
-	VM       string        `form:"vm" bson:"vm"`
-	Shared   string        `form:"shared" bson:"shared"`
+	Hostname string        `valid:"Required" form:"hostname" bson:"hostname"`
+	Port     string        `valid:"Required; Numeric" form:"port" bson:"port"`
+	VM       string        `valid:"Required" form:"vm" bson:"vm"`
+	Shared   string        `valid:"Required" form:"shared" bson:"shared"`
 }
 
 type ResponseMessage struct {
@@ -100,6 +98,8 @@ func (this *ConnectionManagerController) CreateConnection() {
 	var insert_failed bool
 	var insert_failed_reason string
 	var insert_id string
+	var valid_failed bool
+	var valid_failed_reason string
 
 	conn_type := this.Ctx.Input.Param(":conn_type")
 
@@ -113,13 +113,19 @@ func (this *ConnectionManagerController) CreateConnection() {
 				decode_failed = true
 				decode_failed_reason = fmt.Sprintf("decode vnc args failed: %s", err)
 			} else {
-				ID := bson.NewObjectId()
-				args.ID = ID
-				insert_id = ID.Hex()
-				err = this.InsertOne(*args)
+				err = this.Valid(args)
 				if err != nil {
-					insert_failed = true
-					insert_failed_reason = fmt.Sprintf("save vnc args failed: %s, args: %s", err, *args)
+					valid_failed = true
+					valid_failed_reason = fmt.Sprintf("valid error: %s", err)
+				} else {
+					ID := bson.NewObjectId()
+					args.ID = ID
+					insert_id = ID.Hex()
+					err = this.InsertOne(*args)
+					if err != nil {
+						insert_failed = true
+						insert_failed_reason = fmt.Sprintf("save vnc args failed: %s, args: %s", err, *args)
+					}
 				}
 			}
 		}
@@ -130,13 +136,19 @@ func (this *ConnectionManagerController) CreateConnection() {
 				decode_failed = true
 				decode_failed_reason = fmt.Sprintf("decode rdp args failed: %s", err)
 			} else {
-				ID := bson.NewObjectId()
-				args.ID = ID
-				insert_id = ID.Hex()
-				err = this.InsertOne(*args)
+				err = this.Valid(args)
 				if err != nil {
-					insert_failed = true
-					insert_failed_reason = fmt.Sprintf("save rdp args failed: %s, args: %s", err, *args)
+					valid_failed = true
+					valid_failed_reason = fmt.Sprintf("valid error: %s", err)
+				} else {
+					ID := bson.NewObjectId()
+					args.ID = ID
+					insert_id = ID.Hex()
+					err = this.InsertOne(*args)
+					if err != nil {
+						insert_failed = true
+						insert_failed_reason = fmt.Sprintf("save rdp args failed: %s, args: %s", err, *args)
+					}
 				}
 			}
 		}
@@ -147,14 +159,21 @@ func (this *ConnectionManagerController) CreateConnection() {
 				decode_failed = true
 				decode_failed_reason = fmt.Sprintf("decode ssh args failed: %s", err)
 			} else {
-				ID := bson.NewObjectId()
-				args.ID = ID
-				insert_id = ID.Hex()
-				err = this.InsertOne(*args)
+				err = this.Valid(args)
 				if err != nil {
-					insert_failed = true
-					insert_failed_reason = fmt.Sprintf("save ssh args failed: %s, args: %s", err, *args)
+					valid_failed = true
+					valid_failed_reason = fmt.Sprintf("valid error: %s", err)
+				} else {
+					ID := bson.NewObjectId()
+					args.ID = ID
+					insert_id = ID.Hex()
+					err = this.InsertOne(*args)
+					if err != nil {
+						insert_failed = true
+						insert_failed_reason = fmt.Sprintf("save ssh args failed: %s, args: %s", err, *args)
+					}
 				}
+
 			}
 		}
 
@@ -164,14 +183,21 @@ func (this *ConnectionManagerController) CreateConnection() {
 				decode_failed = true
 				decode_failed_reason = fmt.Sprintf("decode telnet args failed: %s", err)
 			} else {
-				ID := bson.NewObjectId()
-				args.ID = ID
-				insert_id = ID.Hex()
-				err = this.InsertOne(*args)
+				err = this.Valid(args)
 				if err != nil {
-					insert_failed = true
-					insert_failed_reason = fmt.Sprintf("save telnet args failed: %s, args: %s", err, *args)
+					valid_failed = true
+					valid_failed_reason = fmt.Sprintf("valid error: %s", err)
+				} else {
+					ID := bson.NewObjectId()
+					args.ID = ID
+					insert_id = ID.Hex()
+					err = this.InsertOne(*args)
+					if err != nil {
+						insert_failed = true
+						insert_failed_reason = fmt.Sprintf("save telnet args failed: %s, args: %s", err, *args)
+					}
 				}
+
 			}
 		}
 
@@ -181,14 +207,21 @@ func (this *ConnectionManagerController) CreateConnection() {
 				decode_failed = true
 				decode_failed_reason = fmt.Sprintf("decode spice args failed: %s", err)
 			} else {
-				ID := bson.NewObjectId()
-				args.ID = ID
-				insert_id = ID.Hex()
-				err = this.InsertOne(*args)
+				err = this.Valid(args)
 				if err != nil {
-					insert_failed = true
-					insert_failed_reason = fmt.Sprintf("save spice args failed: %s, args: %s", err, *args)
+					valid_failed = true
+					valid_failed_reason = fmt.Sprintf("valid error: %s", err)
+				} else {
+					ID := bson.NewObjectId()
+					args.ID = ID
+					insert_id = ID.Hex()
+					err = this.InsertOne(*args)
+					if err != nil {
+						insert_failed = true
+						insert_failed_reason = fmt.Sprintf("save spice args failed: %s, args: %s", err, *args)
+					}
 				}
+
 			}
 		}
 
@@ -198,13 +231,19 @@ func (this *ConnectionManagerController) CreateConnection() {
 				decode_failed = true
 				decode_failed_reason = fmt.Sprintf("decode libvirt args failed: %s", err)
 			} else {
-				ID := bson.NewObjectId()
-				args.ID = ID
-				insert_id = ID.Hex()
-				err = this.InsertOne(*args)
+				err = this.Valid(args)
 				if err != nil {
-					insert_failed = true
-					insert_failed_reason = fmt.Sprintf("save libvirt args failed: %s, args: %s", err, *args)
+					valid_failed = true
+					valid_failed_reason = fmt.Sprintf("valid error: %s", err)
+				} else {
+					ID := bson.NewObjectId()
+					args.ID = ID
+					insert_id = ID.Hex()
+					err = this.InsertOne(*args)
+					if err != nil {
+						insert_failed = true
+						insert_failed_reason = fmt.Sprintf("save libvirt args failed: %s, args: %s", err, *args)
+					}
 				}
 			}
 		}
@@ -213,21 +252,33 @@ func (this *ConnectionManagerController) CreateConnection() {
 			utils.Println(decode_failed_reason)
 			resp_message.Code = 1
 			resp_message.Message = decode_failed_reason
+			this.Ctx.Output.Status = 500
 		}
 
 		if insert_failed {
 			utils.Println(insert_failed_reason)
 			resp_message.Code = 2
 			resp_message.Message = insert_failed_reason
+			this.Ctx.Output.Status = 500
+		}
+
+		if valid_failed {
+			utils.Println(valid_failed_reason)
+			resp_message.Code = 3
+			resp_message.Message = valid_failed_reason
+			this.Ctx.Output.Status = 500
 		}
 
 	} else {
-		resp_message.Code = 3
-		resp_message.Message = "wrong type"
+		resp_message.Code = 4
+		resp_message.Message = "wrong protocol type"
+		this.Ctx.Output.Status = 400
 	}
 
-	resp_message.Code = 0
-	resp_message.Message = insert_id
+	if resp_message.Code == 0 {
+		resp_message.Code = 0
+		resp_message.Message = insert_id
+	}
 
 	this.Data["json"] = resp_message
 	this.ServeJson()
@@ -292,5 +343,19 @@ func (this *ConnectionManagerController) InsertOne(value interface{}) error {
 		return fmt.Errorf("insert mongo failed: %s", err)
 	}
 
+	return nil
+}
+
+func (this *ConnectionManagerController) Valid(value interface{}) error {
+	valid := validation.Validation{}
+	b, err := valid.Valid(value)
+	if err != nil {
+		return err
+	}
+	if !b {
+		for _, err := range valid.Errors {
+			return fmt.Errorf("%s %s", err.Key, err.Message)
+		}
+	}
 	return nil
 }
