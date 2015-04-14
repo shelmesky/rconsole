@@ -5,77 +5,10 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	"github.com/shelmesky/rconsole/client"
+	"github.com/shelmesky/rconsole/lib"
 	"github.com/shelmesky/rconsole/mongo"
 	"github.com/shelmesky/rconsole/utils"
 )
-
-type VNCArgs struct {
-	UUID       string `form:"-" bson:"uuid"`
-	Type       string `form:"-" bson:"type"`
-	Hostname   string `valid:"Required" form:"hostname" bson:"hostname"`
-	Port       string `valid:"Required; Numeric" form:"port" bson:"port"`
-	Width      string `valid:"Required; Numeric" form:"width" bson:"width"`
-	Height     string `valid:"Required; Numeric" form:"height" bson:"height"`
-	DPI        string `valid:"Required; Numeric" form:"dpi" bson:"dpi"`
-	ColorDepth string `valid:"Required; Numeric" form:"color-depth" bson:"color-depth"`
-}
-
-type RDPArgs struct {
-	UUID          string `form:"-" bson:"uuid"`
-	Type          string `form:"-" bson:"type"`
-	Hostname      string `valid:"Required" form:"hostname" bson:"hostname"`
-	Port          string `valid:"Required; Numeric" form:"port" bson:"port"`
-	Width         string `valid:"Required; Numeric" form:"width" bson:"width"`
-	Height        string `valid:"Required; Numeric" form:"height" bson:"height"`
-	DPI           string `valid:"Required; Numeric" form:"dpi" bson:"dpi"`
-	ColorDepth    string `valid:"Required; Numeric" form:"color-depth" bson:"color-depth"`
-	Console       string `form:"console" bson:"console"`
-	IntialProgram string `form:"initial-program" bson:"initial-program"`
-	RemoteApp     string `form:"remote-app" bson:"remote-app"`
-	RemoteAppDirs string `form:"remote-app-dirs" bson:"remote-app-dirs"`
-	RemoteAppArgs string `form:"remote-app-args" bson:"remote-app-args"`
-}
-
-type SSHArgs struct {
-	UUID       string `form:"-" bson:"uuid"`
-	Type       string `form:"-" bson:"type"`
-	Hostname   string `valid:"Required" form:"hostname" bson:"hostname"`
-	Port       string `valid:"Required; Numeric" form:"port" bson:"port"`
-	Width      string `valid:"Required; Numeric" form:"width" bson:"width"`
-	Height     string `valid:"Required; Numeric" form:"height" bson:"height"`
-	DPI        string `valid:"Required; Numeric" form:"dpi" bson:"dpi"`
-	PrivateKey string `form:"private-key" bson:"private-key"`
-	Passphrase string `form:"passphrase" bson:"passphrase"`
-}
-
-type TELNETArgs struct {
-	UUID          string `form:"-" bson:"uuid"`
-	Type          string `form:"-" bson:"type"`
-	Hostname      string `valid:"Required" form:"hostname" bson:"hostname"`
-	Port          string `valid:"Required; Numeric" form:"port" bson:"port"`
-	Width         string `valid:"Required; Numeric" form:"width" bson:"width"`
-	Height        string `valid:"Required; Numeric" form:"height" bson:"height"`
-	DPI           string `valid:"Required; Numeric" form:"dpi" bson:"dpi"`
-	UsernameRegex string `form:"username-regex" bson:"username-regex"`
-	PasswordRegex string `form:"password-regex" bson:"password-regex"`
-}
-
-type SPICEArgs struct {
-	UUID     string `form:"-" bson:"uuid"`
-	Type     string `form:"-" bson:"type"`
-	Hostname string `valid:"Required" form:"hostname" bson:"hostname"`
-	Port     string `valid:"Required; Numeric" form:"port" bson:"port"`
-	Password string `form:"password" bson:"password"`
-}
-
-type LIBVIRTArgs struct {
-	UUID     string `form:"-" bson:"uuid"`
-	Type     string `form:"-" bson:"type"`
-	Hostname string `valid:"Required" form:"hostname" bson:"hostname"`
-	Port     string `valid:"Required; Numeric" form:"port" bson:"port"`
-	VM       string `valid:"Required" form:"vm" bson:"vm"`
-	Shared   string `valid:"Required" form:"shared" bson:"shared"`
-}
 
 type ResponseMessage struct {
 	Code    int         `json:"code"`
@@ -119,7 +52,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = mongo.InsertOne(*args)
+					err = mongo.InsertOne("connection", *args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save vnc args failed: %s, args: %s", err, *args)
@@ -141,7 +74,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = mongo.InsertOne(*args)
+					err = mongo.InsertOne("connection", *args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save rdp args failed: %s, args: %s", err, *args)
@@ -163,7 +96,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = mongo.InsertOne(*args)
+					err = mongo.InsertOne("connection", *args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save ssh args failed: %s, args: %s", err, *args)
@@ -185,7 +118,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = mongo.InsertOne(*args)
+					err = mongo.InsertOne("connection", *args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save telnet args failed: %s, args: %s", err, *args)
@@ -207,7 +140,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = mongo.InsertOne(*args)
+					err = mongo.InsertOne("connection", *args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save spice args failed: %s, args: %s", err, *args)
@@ -229,7 +162,7 @@ func (this *ConnectionManagerController) CreateConnection() {
 				} else {
 					args.UUID = utils.MakeRandomID()
 					insert_id = args.UUID
-					err = mongo.InsertOne(*args)
+					err = mongo.InsertOne("connection", *args)
 					if err != nil {
 						insert_failed = true
 						insert_failed_reason = fmt.Sprintf("save libvirt args failed: %s, args: %s", err, *args)
@@ -280,43 +213,43 @@ func (this *ConnectionManagerController) UpdateConnection() {
 func (this *ConnectionManagerController) DeleteConnection() {
 }
 
-func (this *ConnectionManagerController) DecodeVNCArgs() (*VNCArgs, error) {
-	var vnc_args VNCArgs
+func (this *ConnectionManagerController) DecodeVNCArgs() (*lib.VNCArgs, error) {
+	var vnc_args lib.VNCArgs
 	vnc_args.Type = "vnc"
 	err := this.ParseForm(&vnc_args)
 	return &vnc_args, err
 }
 
-func (this *ConnectionManagerController) DecodeRDPArgs() (*RDPArgs, error) {
-	var rdp_args RDPArgs
+func (this *ConnectionManagerController) DecodeRDPArgs() (*lib.RDPArgs, error) {
+	var rdp_args lib.RDPArgs
 	rdp_args.Type = "rdp"
 	err := this.ParseForm(&rdp_args)
 	return &rdp_args, err
 }
 
-func (this *ConnectionManagerController) DecodeSSHArgs() (*SSHArgs, error) {
-	var ssh_args SSHArgs
+func (this *ConnectionManagerController) DecodeSSHArgs() (*lib.SSHArgs, error) {
+	var ssh_args lib.SSHArgs
 	ssh_args.Type = "ssh"
 	err := this.ParseForm(&ssh_args)
 	return &ssh_args, err
 }
 
-func (this *ConnectionManagerController) DecodeTELNETArgs() (*TELNETArgs, error) {
-	var telnet_args TELNETArgs
+func (this *ConnectionManagerController) DecodeTELNETArgs() (*lib.TELNETArgs, error) {
+	var telnet_args lib.TELNETArgs
 	telnet_args.Type = "telnet"
 	err := this.ParseForm(&telnet_args)
 	return &telnet_args, err
 }
 
-func (this *ConnectionManagerController) DecodeSPICEArgs() (*SPICEArgs, error) {
-	var spice_args SPICEArgs
+func (this *ConnectionManagerController) DecodeSPICEArgs() (*lib.SPICEArgs, error) {
+	var spice_args lib.SPICEArgs
 	spice_args.Type = "spice"
 	err := this.ParseForm(&spice_args)
 	return &spice_args, err
 }
 
-func (this *ConnectionManagerController) DecodeLIBVIRTArgs() (*LIBVIRTArgs, error) {
-	var libvirt_args LIBVIRTArgs
+func (this *ConnectionManagerController) DecodeLIBVIRTArgs() (*lib.LIBVIRTArgs, error) {
+	var libvirt_args lib.LIBVIRTArgs
 	libvirt_args.Type = "libvirt"
 	err := this.ParseForm(&libvirt_args)
 	return &libvirt_args, err
