@@ -4,6 +4,7 @@ type VNCArgs struct {
 	UUID       string `form:"-" bson:"uuid"`
 	Type       string `form:"-" bson:"type"`
 	Hostname   string `valid:"Required" form:"hostname" bson:"hostname"`
+	Password   string `form:"password" bson:"password"`
 	Port       string `valid:"Required; Numeric" form:"port" bson:"port"`
 	Width      string `valid:"Required; Numeric" form:"width" bson:"width"`
 	Height     string `valid:"Required; Numeric" form:"height" bson:"height"`

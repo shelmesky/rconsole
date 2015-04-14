@@ -185,6 +185,9 @@ func (this *Client) ReadInstruction() *inst.Instruction {
 		utils.Println("Read instruction")
 	}
 	instruction, err := inst.LoadInstruction(this.BufReceive())
+	if this.Debug {
+		utils.Println(instruction.String())
+	}
 	if err != nil {
 		utils.Println("Read instruction failed:", err)
 	} else {

@@ -3,24 +3,55 @@ package wscontrollers
 import (
 	"fmt"
 	"github.com/astaxie/beego/context"
+	"github.com/shelmesky/rconsole/lib"
+	"github.com/shelmesky/rconsole/mongo"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func GetVNCArgs(context *context.Context) (map[string]string, error) {
+	var Type string
+	var has_uuid bool
+	var uuid string
+	var args lib.VNCArgs
+
 	vnc_args := make(map[string]string, 0)
 
-	Type := context.Input.Query("type")
-	if Type == "" || Type != "vnc" {
+	Type = context.Input.Query("type")
+	if Type == "" {
+		uuid = context.Input.Query("uuid")
+		t, err := mongo.GetConnTypeByUUID(uuid)
+		if err == nil {
+			Type = t
+			has_uuid = true
+		}
+	}
+
+	if Type != "vnc" {
 		return vnc_args, fmt.Errorf("got wrong protocol: %s\n", Type)
 	}
 
 	vnc_args["type"] = Type
 
-	vnc_args["hostname"] = context.Input.Query("hostname")
-	vnc_args["port"] = context.Input.Query("port")
-	vnc_args["password"] = context.Input.Query("password")
-	vnc_args["width"] = context.Input.Query("width")
-	vnc_args["height"] = context.Input.Query("height")
-	vnc_args["dpi"] = context.Input.Query("dpi")
+	if has_uuid {
+		err := mongo.QueryOne("connection", bson.M{"uuid": uuid}, &args)
+		if err != nil {
+			return vnc_args, err
+		}
+		vnc_args["hostname"] = args.Hostname
+		vnc_args["port"] = args.Port
+		vnc_args["password"] = args.Password
+		vnc_args["width"] = args.Width
+		vnc_args["height"] = args.Height
+		vnc_args["dpi"] = args.DPI
+
+	} else {
+		vnc_args["hostname"] = context.Input.Query("hostname")
+		vnc_args["port"] = context.Input.Query("port")
+		vnc_args["password"] = context.Input.Query("password")
+		vnc_args["width"] = context.Input.Query("width")
+		vnc_args["height"] = context.Input.Query("height")
+		vnc_args["dpi"] = context.Input.Query("dpi")
+	}
 
 	if vnc_args["hostname"] == "" || vnc_args["port"] == "" {
 		goto get_args_failed

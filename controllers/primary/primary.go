@@ -7,6 +7,7 @@ import (
 	"github.com/shelmesky/rconsole/controllers/spice"
 	"github.com/shelmesky/rconsole/controllers/websocket"
 	"github.com/shelmesky/rconsole/libvirt"
+	"github.com/shelmesky/rconsole/mongo"
 	"github.com/shelmesky/rconsole/utils"
 	"strings"
 )
@@ -22,8 +23,22 @@ func (this *MainController) Get() {
 	var err error
 	var args_list []string
 	var kvm_console_type string
+	var Type string
 
-	Type := this.GetString("type")
+	Type = this.GetString("type")
+	if Type == "" {
+		uuid := this.GetString("uuid")
+		t, err := mongo.GetConnTypeByUUID(uuid)
+		if err == nil {
+			Type = t
+		}
+	}
+
+	if Type == "" {
+		utils.Println("bad request: can not find protocol type")
+		this.Abort("400")
+		return
+	}
 
 	found_protocol = client.ValidProtocol(Type)
 
