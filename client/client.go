@@ -29,6 +29,15 @@ type Client struct {
 	ReadBuffer     []byte
 }
 
+func ValidProtocol(protocol string) bool {
+	for index := range PROTOCOLS {
+		if protocol == PROTOCOLS[index] {
+			return true
+		}
+	}
+	return false
+}
+
 func NewClient(host, port string, timeout time.Duration, debug bool) *Client {
 	c := &Client{
 		Host:      host,

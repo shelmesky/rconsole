@@ -102,12 +102,8 @@ func (this *ConnectionManagerController) CreateConnection() {
 	var insert_id string
 
 	conn_type := this.Ctx.Input.Param(":conn_type")
-	for index := range client.PROTOCOLS {
-		if conn_type == client.PROTOCOLS[index] {
-			found_protocol = true
-			break
-		}
-	}
+
+	found_protocol = client.ValidProtocol(conn_type)
 
 	if found_protocol {
 

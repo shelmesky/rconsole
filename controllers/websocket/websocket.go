@@ -41,12 +41,8 @@ func (this *WebSocketController) Get() {
 	}()
 
 	Type := this.GetString("type")
-	for index := range rclient.PROTOCOLS {
-		if Type == rclient.PROTOCOLS[index] {
-			found_protocol = true
-			break
-		}
-	}
+
+	found_protocol = rclient.ValidProtocol(Type)
 
 	if !found_protocol {
 		utils.Printf("invalid protocol: %s\n", Type)

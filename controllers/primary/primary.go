@@ -24,12 +24,8 @@ func (this *MainController) Get() {
 	var kvm_console_type string
 
 	Type := this.GetString("type")
-	for index := range client.PROTOCOLS {
-		if Type == client.PROTOCOLS[index] {
-			found_protocol = true
-			break
-		}
-	}
+
+	found_protocol = client.ValidProtocol(Type)
 
 	if !found_protocol {
 		utils.Printf("Invalid protocol: %s\n", Type)
