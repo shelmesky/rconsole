@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/astaxie/beego"
+	"github.com/shelmesky/rconsole/client"
 	"github.com/shelmesky/rconsole/controllers/api"
 	"github.com/shelmesky/rconsole/controllers/libvirt"
 	"github.com/shelmesky/rconsole/controllers/primary"
@@ -32,7 +33,8 @@ type GlobalConfig struct {
 	MongoTimeout   int    `json:"mongo_timeout"`
 
 	ServerProfile bool
-	ShowCheckConn bool `json:"show_check_conn"`
+	ShowCheckConn bool           `json:"show_check_conn"`
+	GuacdServer   []client.Guacd `json:"guacd"`
 }
 
 var (
@@ -165,6 +167,9 @@ func main() {
 
 	// 自定义初始化
 	Init()
+
+	// 初始化guacd服务连接池
+	client.Pool.Init(Config.GuacdServer)
 
 	utils.Println("Try connect to:", Config.MongoURL)
 

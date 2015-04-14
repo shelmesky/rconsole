@@ -2,11 +2,14 @@ package client
 
 import (
 	"bufio"
+	"container/list"
 	"fmt"
 	"github.com/shelmesky/rconsole/client/inst"
 	"github.com/shelmesky/rconsole/utils"
+	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -15,7 +18,62 @@ var (
 	PROTOCOL_NAME  = "guacamole"
 	BUF_LEN        = 4096
 	INST_TERM_BYTE = byte(inst.INST_TERM[0])
+	Pool           = new(ClientPool)
+	PoolRate       = 20
+	ClientTimeout  = 3 * time.Second
+	ClientDebug    = true
 )
+
+type Guacd struct {
+	Hostname string `json:"hostname"`
+	Port     string `json:"port"`
+	Weight   int    `json:"weight"`
+}
+
+type ClientPool struct {
+	clients *list.List
+	pool    []string
+	lock    sync.RWMutex
+}
+
+func (this *ClientPool) Init(servers []Guacd) {
+	this.clients = list.New()
+
+	for idx := range servers {
+		for j := 0; j < PoolRate*servers[idx].Weight; j++ {
+			this.pool = append(this.pool, servers[idx].Hostname)
+		}
+	}
+
+	for idx := range servers {
+		server := servers[idx]
+		c := NewClient(server.Hostname, server.Port, ClientTimeout, ClientDebug)
+		this.Add(c)
+	}
+}
+
+func (this *ClientPool) Get() (*Client, error) {
+	nano := time.Now().UnixNano()
+	rand.Seed(nano)
+	rndNum := rand.Int63()
+	index := rndNum % int64(len(this.pool))
+	client_hostname := this.pool[index]
+	for e := this.clients.Front(); e != nil; e = e.Next() {
+		if client, ok := e.Value.(*Client); ok {
+			if client.Host == client_hostname {
+				return client, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("can not find guacd server object")
+}
+
+func (this *ClientPool) Add(client *Client) {
+	this.clients.PushBack(client)
+}
+
+func (this *ClientPool) Delete(client *Client) {
+}
 
 type Client struct {
 	Host           string
@@ -163,6 +221,7 @@ func (this *Client) HandShake(protocol, width, height, dpi string, audio []strin
 
 	// 2. Receive "args" instruction
 	instruction := this.ReadInstruction()
+	utils.Println("######", instruction)
 	utils.Printf("Expecting 'args' instruction, received: %s\n", instruction.String())
 
 	if instruction == nil {

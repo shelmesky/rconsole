@@ -3,5 +3,8 @@
     "profile_address": "0.0.0.0:9998",
     "listen_address": "0.0.0.0:9999",
     "mongo_url": "mongodb://127.0.0.1:27017/rconsole",
-    "mongo_timeout": 1
+    "mongo_timeout": 1,
+    "guacd": [
+        {"hostname": "172.31.31.110", "port": "4822", "weight": 10}
+    ]
 }

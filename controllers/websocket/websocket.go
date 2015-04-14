@@ -7,7 +7,6 @@ import (
 	rclient "github.com/shelmesky/rconsole/client"
 	"github.com/shelmesky/rconsole/utils"
 	"net/http"
-	"time"
 )
 
 type WebSocketController struct {
@@ -80,7 +79,11 @@ func (this *WebSocketController) Get() {
 	height := url_args["height"]
 	dpi := url_args["dpi"]
 
-	client := rclient.NewClient("172.31.31.110", "4822", 3*time.Second, false)
+	client, err := rclient.Pool.Get()
+	if err != nil {
+		utils.Println("can not find any client")
+		return
+	}
 
 	ret := client.HandShake(protocol_type, width, height, dpi, []string{}, []string{}, url_args)
 	if !ret {
