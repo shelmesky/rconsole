@@ -228,5 +228,7 @@ func main() {
 	beego.Router("/api/conn/update/:conn_type([a-z]+)", &managercontrollers.ConnectionManagerController{}, "put:UpdateConnection")
 	beego.Router("/api/conn/delete", &managercontrollers.ConnectionManagerController{}, "delete:DeleteConnection")
 
+	beego.Router("/api/libvirt/host", &libvirtcontrollers.HostController{})
+
 	beego.Run()
 }
