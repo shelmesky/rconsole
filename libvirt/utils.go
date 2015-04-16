@@ -3,6 +3,8 @@ package libvirt
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/shelmesky/rconsole/utils"
+	"gopkg.in/alexzorin/libvirt-go.v2"
 )
 
 type Listen struct {
@@ -66,4 +68,9 @@ func GetDomainGraphics(host, port, vm_name string) (*Graphics, error) {
 	}
 
 	return GetDomainGraphicsFromXML(dom_str)
+}
+
+func EventCallback(c *libvirt.VirConnection, d *libvirt.VirDomain, event interface{}, f func()) int {
+	utils.Println("got event:", c, d, event, f)
+	return 0
 }

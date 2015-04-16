@@ -1,6 +1,7 @@
 package libvirt
 
 import (
+	"github.com/shelmesky/rconsole/utils"
 	"gopkg.in/alexzorin/libvirt-go.v2"
 	"sync"
 )
@@ -37,6 +38,20 @@ func GetConn(host, port string) (*libvirt.VirConnection, error) {
 	if err != nil {
 		return &new_conn, err
 	}
+
+	var Callback libvirt.DomainEventCallback
+	Callback = EventCallback
+
+	test := func() {}
+	dom := libvirt.VirDomain{}
+
+	ret := libvirt.EventRegisterDefaultImpl()
+	ret = new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_LIFECYCLE, &Callback, test)
+	ret = new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_REBOOT, &Callback, test)
+	ret = new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_BLOCK_JOB, &Callback, test)
+	go func() {
+		ret = libvirt.EventRunDefaultImpl()
+	}()
 
 	global_conn.lock.Lock()
 	global_conn.conn_map[host] = &new_conn
