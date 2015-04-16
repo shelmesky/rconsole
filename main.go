@@ -12,6 +12,7 @@ import (
 	"github.com/shelmesky/rconsole/controllers/websocket"
 	"github.com/shelmesky/rconsole/mongo"
 	"github.com/shelmesky/rconsole/utils"
+	"gopkg.in/alexzorin/libvirt-go.v2"
 	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
@@ -154,6 +155,9 @@ func SignalCallback() {
 }
 
 func main() {
+	ret := libvirt.EventRegisterDefaultImpl()
+	utils.Println("EventRegisterDefaultImpl ret:", ret)
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	defer func() {

@@ -13,11 +13,13 @@ type GlobalConn struct {
 
 var (
 	global_conn *GlobalConn
+	event_map   map[string]bool
 )
 
 func init() {
 	global_conn = new(GlobalConn)
 	global_conn.conn_map = make(map[string]*libvirt.VirConnection, 0)
+	event_map = make(map[string]bool, 0)
 }
 
 func GetConn(host, port string) (*libvirt.VirConnection, error) {
@@ -34,24 +36,42 @@ func GetConn(host, port string) (*libvirt.VirConnection, error) {
 	}
 	global_conn.lock.RUnlock()
 
-	new_conn, err := libvirt.NewVirConnection("qemu+tcp://" + host + ":" + port + "/system")
+	address := host + ":" + port
+	new_conn, err := libvirt.NewVirConnection("qemu+tcp://" + address + "/system")
 	if err != nil {
 		return &new_conn, err
 	}
 
-	var Callback libvirt.DomainEventCallback
-	Callback = EventCallback
+	if v, ok := event_map[address]; !ok {
+		if v == false {
+			utils.Println("register event...")
 
-	test := func() {}
-	dom := libvirt.VirDomain{}
+			var Callback libvirt.DomainEventCallback
+			Callback = EventCallback
 
-	ret := libvirt.EventRegisterDefaultImpl()
-	ret = new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_LIFECYCLE, &Callback, test)
-	ret = new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_REBOOT, &Callback, test)
-	ret = new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_BLOCK_JOB, &Callback, test)
-	go func() {
-		ret = libvirt.EventRunDefaultImpl()
-	}()
+			test := func() {}
+			//dom := libvirt.VirDomain{}
+			dom, _ := new_conn.LookupDomainByName("i-2-161-VM")
+
+			ret := new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_LIFECYCLE, &Callback, test)
+			utils.Println("LIFECYCLE ret:", ret)
+
+			//ret = new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_REBOOT, &Callback, test)
+			//utils.Println("ret:", ret)
+
+			//ret = new_conn.DomainEventRegister(dom, libvirt.VIR_DOMAIN_EVENT_ID_BLOCK_JOB, &Callback, test)
+			//utils.Println("ret:", ret)
+
+			go func() {
+				for {
+					ret := libvirt.EventRunDefaultImpl()
+					utils.Println("EventRunDefaultImpl ret:", ret)
+				}
+			}()
+
+			event_map[address] = true
+		}
+	}
 
 	global_conn.lock.Lock()
 	global_conn.conn_map[host] = &new_conn
