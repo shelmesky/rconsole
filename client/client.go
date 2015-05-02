@@ -21,7 +21,7 @@ var (
 	Pool           = new(ClientPool)
 	PoolRate       = 20
 	ClientTimeout  = 3 * time.Second
-	ClientDebug    = true
+	ClientDebug    = false
 )
 
 type Guacd struct {

@@ -35,6 +35,7 @@ type GlobalConfig struct {
 
 	ServerProfile bool
 	ShowCheckConn bool           `json:"show_check_conn"`
+	ServerDebug   bool           `json:"debug"`
 	GuacdServer   []client.Guacd `json:"guacd"`
 }
 
@@ -54,6 +55,7 @@ var (
 	ShowCheckConn = flag.Bool("show_check_conn", false, "Show check MongoDB server informatioin")
 
 	ServerProfile = flag.Bool("profile", true, "Start web profile interface")
+	ServerDebug   = flag.Bool("debug", false, "Print debug information when server is running.")
 )
 
 // 判断文件或目录是否存在
@@ -102,6 +104,12 @@ func Init() {
 			*ShowCheckConn = true
 		}
 		Config.ShowCheckConn = *ShowCheckConn
+
+		if *ServerDebug == true {
+			*ServerDebug = true
+		}
+		Config.ServerDebug = *ServerDebug
+
 	} else {
 		data, err := ioutil.ReadFile(*ConfigFile)
 		if err != nil {
@@ -138,6 +146,9 @@ func Init() {
 			Config.ShowCheckConn = *ShowCheckConn
 		}
 
+		if *ServerDebug != false {
+			Config.ServerDebug = *ServerDebug
+		}
 	}
 }
 
@@ -171,6 +182,9 @@ func main() {
 
 	// 自定义初始化
 	Init()
+
+	// 设置guacd客户端连接时的调试信息
+	client.ClientDebug = Config.ServerDebug
 
 	// 初始化guacd服务连接池
 	client.Pool.Init(Config.GuacdServer)
